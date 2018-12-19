@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SystemConfiguration>
+    <EthernetPort>enp0s31f6</EthernetPort>
+    <CycleTime_ms>4000</CycleTime_ms>
+    <ServoCollection>
+       <Servo position="1" name="s1">
+          <Type>HIWIN</Type>
+          <StartupParameters>
+            <Item>
+              <Object>
+                <Name>Mode of Operation</Name>
+                <Index>0x6060</Index>
+                <Subindex>0</Subindex>
+                <Type>INT8</Type>
+              </Object>
+              <Value>9</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Reset encoder value</Name>
+                <Index>0x2060</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT8</Type>
+              </Object>
+              <Value>1</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Max acceleration</Name>
+                <Index>0x60C5</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT32</Type>
+              </Object>
+              <Value>1310720</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Max deceleration</Name>
+                <Index>0x60C6</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT32</Type>
+              </Object>
+              <Value>1310720</Value>
+            </Item>
+          </StartupParameters>
+          <PDOmapping>
+            <Tx>
+              <!-- Controlword object is added to the TxPDO by default -->
+              <Object>
+                <Name>Velocity</Name>
+                <Index>0x60FF</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+            </Tx>
+            <Rx>
+              <Object>
+                <!-- Statusword object is added to the RxPDO by default -->
+                <Name>Position</Name>
+                <Index>0x6064</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+              <Object>
+                <Name>Velocity</Name>
+                <Index>0x606C</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+            </Rx>
+          </PDOmapping>
+       </Servo>
+       <Servo position="2" name="s2">
+          <Type>HIWIN</Type>
+          <StartupParameters>
+            <Item>
+              <Object>
+                <Name>Mode of Operation</Name>
+                <Index>0x6060</Index>
+                <Subindex>0</Subindex>
+                <Type>INT8</Type>
+              </Object>
+              <Value>9</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Reset encoder value</Name>
+                <Index>0x2060</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT8</Type>
+              </Object>
+              <Value>1</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Max acceleration</Name>
+                <Index>0x60C5</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT32</Type>
+              </Object>
+              <Value>1310720</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Max deceleration</Name>
+                <Index>0x60C6</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT32</Type>
+              </Object>
+              <Value>1310720</Value>
+            </Item>
+          </StartupParameters>
+          <PDOmapping>
+            <Tx>
+              <!-- Controlword object is added to the TxPDO by default -->
+              <Object>
+                <Name>Velocity</Name>
+                <Index>0x60FF</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+            </Tx>
+            <Rx>
+              <Object>
+                <!-- Statusword object is added to the RxPDO by default -->
+                <Name>Position</Name>
+                <Index>0x6064</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+              <Object>
+                <Name>Velocity</Name>
+                <Index>0x606C</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+            </Rx>
+          </PDOmapping>
+       </Servo>
+       <Servo position="3" name="s3">
+          <Type>HIWIN</Type>
+          <StartupParameters>
+            <Item>
+              <Object>
+                <Name>Mode of Operation</Name>
+                <Index>0x6060</Index>
+                <Subindex>0</Subindex>
+                <Type>INT8</Type>
+              </Object>
+              <Value>9</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Reset encoder value</Name>
+                <Index>0x2060</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT8</Type>
+              </Object>
+              <Value>1</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Max acceleration</Name>
+                <Index>0x60C5</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT32</Type>
+              </Object>
+              <Value>1310720</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Max deceleration</Name>
+                <Index>0x60C6</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT32</Type>
+              </Object>
+              <Value>1310720</Value>
+            </Item>
+          </StartupParameters>
+          <PDOmapping>
+            <Tx>
+              <!-- Controlword object is added to the TxPDO by default -->
+              <Object>
+                <Name>Velocity</Name>
+                <Index>0x60FF</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+            </Tx>
+            <Rx>
+              <Object>
+                <!-- Statusword object is added to the RxPDO by default -->
+                <Name>Position</Name>
+                <Index>0x6064</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+              <Object>
+                <Name>Velocity</Name>
+                <Index>0x606C</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+            </Rx>
+          </PDOmapping>
+       </Servo>
+       <Servo position="4" name="s4">
+          <Type>HIWIN</Type>
+          <StartupParameters>
+            <Item>
+              <Object>
+                <Name>Mode of Operation</Name>
+                <Index>0x6060</Index>
+                <Subindex>0</Subindex>
+                <Type>INT8</Type>
+              </Object>
+              <Value>9</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Reset encoder value</Name>
+                <Index>0x2060</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT8</Type>
+              </Object>
+              <Value>1</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Max acceleration</Name>
+                <Index>0x60C5</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT32</Type>
+              </Object>
+              <Value>1310720</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Max deceleration</Name>
+                <Index>0x60C6</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT32</Type>
+              </Object>
+              <Value>1310720</Value>
+            </Item>
+          </StartupParameters>
+          <PDOmapping>
+            <Tx>
+              <!-- Controlword object is added to the TxPDO by default -->
+              <Object>
+                <Name>Velocity</Name>
+                <Index>0x60FF</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+            </Tx>
+            <Rx>
+              <Object>
+                <!-- Statusword object is added to the RxPDO by default -->
+                <Name>Position</Name>
+                <Index>0x6064</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+              <Object>
+                <Name>Velocity</Name>
+                <Index>0x606C</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+            </Rx>
+          </PDOmapping>
+       </Servo>
+       <Servo position="5" name="s5">
+          <Type>HIWIN</Type>
+          <StartupParameters>
+            <Item>
+              <Object>
+                <Name>Mode of Operation</Name>
+                <Index>0x6060</Index>
+                <Subindex>0</Subindex>
+                <Type>INT8</Type>
+              </Object>
+              <Value>9</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Reset encoder value</Name>
+                <Index>0x2060</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT8</Type>
+              </Object>
+              <Value>1</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Max acceleration</Name>
+                <Index>0x60C5</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT32</Type>
+              </Object>
+              <Value>1310720</Value>
+            </Item>
+            <Item>
+              <Object>
+                <Name>Max deceleration</Name>
+                <Index>0x60C6</Index>
+                <Subindex>0</Subindex>
+                <Type>UINT32</Type>
+              </Object>
+              <Value>1310720</Value>
+            </Item>
+          </StartupParameters>
+          <PDOmapping>
+            <Tx>
+              <!-- Controlword object is added to the TxPDO by default -->
+              <Object>
+                <Name>Velocity</Name>
+                <Index>0x60FF</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+            </Tx>
+            <Rx>
+              <Object>
+                <!-- Statusword object is added to the RxPDO by default -->
+                <Name>Position</Name>
+                <Index>0x6064</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+              <Object>
+                <Name>Velocity</Name>
+                <Index>0x606C</Index>
+                <Subindex>0</Subindex>
+                <Type>INT32</Type>
+              </Object>
+            </Rx>
+          </PDOmapping>
+       </Servo>
+    </ServoCollection>
+</SystemConfiguration>
