@@ -37,7 +37,7 @@ The testapp puts the ethercat master and the servos to operational state. Then t
 
 `servo_collection.write(servo_name,"Torque",target_torque);`
 
-The entity names (in this case "Torque") are defined in the objects of the PDO mapping in the XML config file. The servo name is defined in the name attribute of the servo XML object.
+The entity names (in this case "Torque") are defined in the objects of the PDOmapping element in the XML config file. The servo name is defined in the name attribute of the servo XML object.
 
 
 
