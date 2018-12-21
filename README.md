@@ -31,3 +31,14 @@ The corresponding XML files in the config folder must be edited to contain the c
 
 `ifconfig`
 
+The cycletime is defined in ms and can according to the HIWIN manual be set to 250, 500, 1000, 2000, or 4000 milliseconds. 
+
+The testapp puts the ethercat master and the servos to operational state. Then the servos can be controlled by writing or reading entities to named servos, e.g.:
+
+`servo_collection.write(servo_name,"Torque",target_torque);`
+
+The entity names (in this case "Torque") are defined in the objects of the PDO mapping in the XML config file. The servo name is defined in the name attribute of the servo XML object.
+
+
+
+
