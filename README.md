@@ -28,6 +28,8 @@ There are three testapps that can be run
 
 `sudo ./positiontest`
 
+If you get an error about libasp_servo_api.so missing make sure that you install asp_servo_api first (see top of this README) and make sure that you have issued `sudo ldconfig`
+
 The corresponding XML files in the config folder must be edited to contain the correct servo setup. The ethernet port can be detected by running:
 
 `ifconfig`
