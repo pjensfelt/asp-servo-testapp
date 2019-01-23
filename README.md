@@ -12,6 +12,7 @@ https://github.com/pjensfelt/asp_servo_api
 Clone the repository
 
 ```
+git clone https://github.com/pjensfelt/asp_servo_testapp.git
 cd asp-servo-testapp
 mkdir build
 cd build
