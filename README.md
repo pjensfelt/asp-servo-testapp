@@ -5,7 +5,7 @@ Test app for the asp-servo API
 
 Install the asp-servo library
 
-https://github.com/urban-eriksson/asp-servo
+https://github.com/pjensfelt/asp_servo_api
 
 ## How to run
 
