@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <SystemConfiguration>
-    <EthernetPort>enp0s31f6</EthernetPort>
+    <EthernetPort>enp14s0</EthernetPort>
     <CycleTime_ms>4000</CycleTime_ms>
     <ServoCollection>
        <Servo position="1" name="s1">
