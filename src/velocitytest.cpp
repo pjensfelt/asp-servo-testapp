@@ -28,7 +28,13 @@ int main() {
         }
         std::string delimiter = ",";
         std::string servo_name = input_str.substr(0, input_str.find(delimiter));
-        int target_velocity = std::stoi(input_str.substr(input_str.find(delimiter)+1,input_str.size() - input_str.find(delimiter) - 1));
+ 
+	if (servo_name.length() != 2) {
+		std::cerr << "Servo name shoukd be for example s1. Exiting!" << std::endl;
+		break;
+	}
+
+       int target_velocity = std::stoi(input_str.substr(input_str.find(delimiter)+1,input_str.size() - input_str.find(delimiter) - 1));
         if (target_velocity > 131072) {
             target_velocity = 131072;
         }
