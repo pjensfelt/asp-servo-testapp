@@ -4,7 +4,12 @@
 #include <chrono>
 #include <thread>
 
-int main() {
+int main(int argc, char** argv) {
+
+    bool verbose = true;
+    if (argc > 1) {
+	verbose = false;
+    }
 
     // Loading servo settings from XML
     asp::ServoCollection servo_collection("../config/asp_test_velocity.xml");
@@ -28,27 +33,31 @@ int main() {
         }
         std::string delimiter = ",";
         std::string servo_name = input_str.substr(0, input_str.find(delimiter));
- 
-	if (servo_name.length() != 2) {
-		std::cerr << "Servo name shoukd be for example s1. Exiting!" << std::endl;
-		break;
-	}
 
-       int target_velocity = std::stoi(input_str.substr(input_str.find(delimiter)+1,input_str.size() - input_str.find(delimiter) - 1));
-        if (target_velocity > 131072) {
-            target_velocity = 131072;
+	std::cout << "Position of " << servo_name << ": " 
+		<< servo_collection.read_INT32(servo_name, "Position") 
+		<< std::endl;
+
+        int target_velocity = std::stoi(input_str.substr(input_str.find(delimiter)+1,input_str.size() - input_str.find(delimiter) - 1));
+        if (target_velocity > 1310720) {
+            target_velocity = 1310720;
         }
-        if (target_velocity < -131072) {
-            target_velocity = -131072;
+        if (target_velocity < -1310720) {
+            target_velocity = -1310720;
         }
-        servo_collection.set_verbose(true);
+
+        servo_collection.set_verbose(verbose);
         // Writing velocity to servo
         servo_collection.write(servo_name,"Velocity",target_velocity);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         servo_collection.set_verbose(false);
+
+	std::cout << "Position of " << servo_name << ": " 
+		<< servo_collection.read_INT32(servo_name, "Position") 
+		<< std::endl;
     }
 
-    servo_collection.set_verbose(true);
+    servo_collection.set_verbose(verbose);
     servo_collection.require_servo_state(asp::ServoStates::SwitchOnDisabled);
     servo_collection.set_verbose(false);  
     servo_collection.disconnect();
