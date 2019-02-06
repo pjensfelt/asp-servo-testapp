@@ -15,15 +15,6 @@
               </Object>
               <Value>10</Value>
             </Item>
-            <Item>
-              <Object>
-                <Name>Reset encoder value</Name>
-                <Index>0x2060</Index>
-                <Subindex>0</Subindex>
-                <Type>UINT8</Type>
-              </Object>
-              <Value>1</Value>
-            </Item>
           </StartupParameters>
           <PDOmapping>
             <Tx>
@@ -63,15 +54,6 @@
                 <Type>INT8</Type>
               </Object>
               <Value>10</Value>
-            </Item>
-            <Item>
-              <Object>
-                <Name>Reset encoder value</Name>
-                <Index>0x2060</Index>
-                <Subindex>0</Subindex>
-                <Type>UINT8</Type>
-              </Object>
-              <Value>1</Value>
             </Item>
           </StartupParameters>
           <PDOmapping>
@@ -113,15 +95,6 @@
               </Object>
               <Value>10</Value>
             </Item>
-            <Item>
-              <Object>
-                <Name>Reset encoder value</Name>
-                <Index>0x2060</Index>
-                <Subindex>0</Subindex>
-                <Type>UINT8</Type>
-              </Object>
-              <Value>1</Value>
-            </Item>
           </StartupParameters>
           <PDOmapping>
             <Tx>
@@ -162,15 +135,6 @@
               </Object>
               <Value>10</Value>
             </Item>
-            <Item>
-              <Object>
-                <Name>Reset encoder value</Name>
-                <Index>0x2060</Index>
-                <Subindex>0</Subindex>
-                <Type>UINT8</Type>
-              </Object>
-              <Value>1</Value>
-            </Item>
           </StartupParameters>
           <PDOmapping>
             <Tx>
@@ -210,15 +174,6 @@
                 <Type>INT8</Type>
               </Object>
               <Value>10</Value>
-            </Item>
-            <Item>
-              <Object>
-                <Name>Reset encoder value</Name>
-                <Index>0x2060</Index>
-                <Subindex>0</Subindex>
-                <Type>UINT8</Type>
-              </Object>
-              <Value>1</Value>
             </Item>
           </StartupParameters>
           <PDOmapping>

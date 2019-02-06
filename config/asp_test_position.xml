@@ -17,15 +17,6 @@
             </Item>
             <Item>
               <Object>
-                <Name>Reset encoder value</Name>
-                <Index>0x2060</Index>
-                <Subindex>0</Subindex>
-                <Type>UINT8</Type>
-              </Object>
-              <Value>1</Value>
-            </Item>
-            <Item>
-              <Object>
                 <Name>Max acceleration</Name>
                 <Index>0x60C5</Index>
                 <Subindex>0</Subindex>
@@ -81,15 +72,6 @@
                 <Type>INT8</Type>
               </Object>
               <Value>8</Value>
-            </Item>
-            <Item>
-              <Object>
-                <Name>Reset encoder value</Name>
-                <Index>0x2060</Index>
-                <Subindex>0</Subindex>
-                <Type>UINT8</Type>
-              </Object>
-              <Value>1</Value>
             </Item>
             <Item>
               <Object>
@@ -151,15 +133,6 @@
             </Item>
             <Item>
               <Object>
-                <Name>Reset encoder value</Name>
-                <Index>0x2060</Index>
-                <Subindex>0</Subindex>
-                <Type>UINT8</Type>
-              </Object>
-              <Value>1</Value>
-            </Item>
-            <Item>
-              <Object>
                 <Name>Max acceleration</Name>
                 <Index>0x60C5</Index>
                 <Subindex>0</Subindex>
@@ -218,15 +191,6 @@
             </Item>
             <Item>
               <Object>
-                <Name>Reset encoder value</Name>
-                <Index>0x2060</Index>
-                <Subindex>0</Subindex>
-                <Type>UINT8</Type>
-              </Object>
-              <Value>1</Value>
-            </Item>
-            <Item>
-              <Object>
                 <Name>Max acceleration</Name>
                 <Index>0x60C5</Index>
                 <Subindex>0</Subindex>
@@ -282,15 +246,6 @@
                 <Type>INT8</Type>
               </Object>
               <Value>8</Value>
-            </Item>
-            <Item>
-              <Object>
-                <Name>Reset encoder value</Name>
-                <Index>0x2060</Index>
-                <Subindex>0</Subindex>
-                <Type>UINT8</Type>
-              </Object>
-              <Value>1</Value>
             </Item>
             <Item>
               <Object>
