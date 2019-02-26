@@ -1,18 +1,20 @@
-#include <asp_servo_api/asp_servo.h>
-#include <asp_servo_api/servo.h>
-#include <iostream>
-#include <chrono>
-#include <thread>
+#include "../include/asp_servo_testapp/velocitytest.hpp"
 
 int main(int argc, char** argv) {
 
     bool verbose = true;
     if (argc > 1) {
-	verbose = false;
+		verbose = false;
     }
-
-    // Loading servo settings from XML
-    asp::ServoCollection servo_collection("../config/asp_test_velocity.xml");
+	// Variables
+	int 	actual_velocity 	= 0;
+    float 	target_velocity 	= 0; // in [mm/s] or [°/s]
+    int 	servo_cmd 			= 0;
+    char 	input_str[INPUT_LEN];
+    std::string servo_name;	
+	
+    // Loading servo settings from XML	
+    asp::ServoCollection servo_collection(CONFIG + VEL_CONF);
 
     // Prints out a summary of the servos
     std::cout << servo_collection << std::endl;
@@ -21,46 +23,58 @@ int main(int argc, char** argv) {
     servo_collection.connect();
     servo_collection.require_ecat_state(asp::EthercatStates::Operational);
     servo_collection.require_servo_state(asp::ServoStates::OperationEnabled);
-
-    // test loop
-    int actual_velocity = 0;
+	
+    // test loop    
     while (true) {
-        std::cout << "Input (servo,targetvalue or q=quit): ";
-        std::string input_str;
-        std::cin >> input_str;
-        if (input_str == "q") {
+        std::cout << "Input (servo targetvalue or q=quit): ";
+        std::cin.getline(input_str, INPUT_LEN);
+        
+        if (strcmp(input_str, "q")==0) {
             break;
         }
-        std::string delimiter = ",";
-        std::string servo_name = input_str.substr(0, input_str.find(delimiter));
+        
+        try {
+        	parse_command(input_str, servo_name, target_velocity);
+        
+			std::cout << "Position of " << servo_name << ": " 
+				<< servo_collection.read_INT32(servo_name, "Position") 
+				<< std::endl;
 
-	std::cout << "Position of " << servo_name << ": " 
-		<< servo_collection.read_INT32(servo_name, "Position") 
-		<< std::endl;
+		    // Transform from [mm/s]/[°/s] to a proper command for the servo motor
+		    servo_cmd = to_ticks(target_velocity, servo_name);
+		} catch(const std::runtime_error& error){
+			std::cerr<< error.what();
+			// Should we stop the servo? Which one? Everyone?
+			continue;
+		}
 
-        int target_velocity = std::stoi(input_str.substr(input_str.find(delimiter)+1,input_str.size() - input_str.find(delimiter) - 1));
-        if (target_velocity > 1310720) {
-            target_velocity = 1310720;
+        if (servo_cmd > MAX_V) {
+            servo_cmd = MAX_V;
         }
-        if (target_velocity < -1310720) {
-            target_velocity = -1310720;
+        if (servo_cmd < -MAX_V) {
+            servo_cmd = -MAX_V;
         }
-
+        
+        std::cout << "Writing to servo " << servo_name << " ticks: "<< servo_cmd << std::endl;
+		
         servo_collection.set_verbose(verbose);
+        
         // Writing velocity to servo
-        servo_collection.write(servo_name,"Velocity",target_velocity);
+        servo_collection.write(servo_name,"Velocity",servo_cmd);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         servo_collection.set_verbose(false);
 
-	std::cout << "Position of " << servo_name << ": " 
-		<< servo_collection.read_INT32(servo_name, "Position") 
-		<< std::endl;
+		std::cout << "Position of " << servo_name << ": " 
+			<< servo_collection.read_INT32(servo_name, "Position") 
+			<< std::endl;
     }
-
+	
     servo_collection.set_verbose(verbose);
     servo_collection.require_servo_state(asp::ServoStates::SwitchOnDisabled);
     servo_collection.set_verbose(false);  
     servo_collection.disconnect();
-
+	
     return 0;
 }
+
+
