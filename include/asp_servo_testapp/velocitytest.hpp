@@ -4,13 +4,18 @@
 #include <chrono>
 #include <thread>
 #include <map>
-
+#include <csignal>
+#include <string.h>
 #define MAX_V 		1310720
 
 // Constants
 const std::string CONFIG 	= "../config/" ;
 const std::string VEL_CONF 	= "asp_test_velocity.xml" ;
 const int INPUT_LEN 		= 255 ;
+
+
+// Loading servo settings from XML	- temporarly global
+asp::ServoCollection servo_collection(CONFIG + VEL_CONF);
 
 // Maps non-standard name of a servo, to the standard convention
 std::map<std::string, std::string> servoname = 
@@ -104,4 +109,41 @@ int to_ticks(float velocity, std::string servo)
 	}
 	std::cout << "Scale factor " << it->second << std::endl;
 	return (int) it->second*velocity;
+}
+
+void stop_all(){
+	std::map<std::string, double>::iterator it;
+	
+	// Write 0 to all the servos
+	for( it = scale.begin(); it!= scale.end(); it ++){
+		std::cout << "Stopping " << it->first << std::endl;
+		servo_collection.write(it->first,"Velocity", 0);
+	}
+	
+}
+
+void stop_all(int sig){
+	
+	std::cerr << "CAUGHT SIGNAL "<< strdup(strsignal(sig)) << std::endl;
+	stop_all();
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	//servo_collection.set_verbose(true);
+    //servo_collection.require_servo_state(asp::ServoStates::SwitchOnDisabled);
+    //servo_collection.set_verbose(false);  
+    servo_collection.disconnect();
+	exit(sig);
+}
+
+/**
+* Attemp to provide a clean exit by executing stop_all when a signal is catched.
+*/
+void register_handlers(){
+
+	std::signal(SIGINT, stop_all);
+	std::signal(SIGABRT, stop_all);
+	std::signal(SIGFPE, stop_all);
+	std::signal(SIGILL, stop_all);
+	std::signal(SIGSEGV, stop_all);
+	std::signal(SIGTERM, stop_all);
+
 }

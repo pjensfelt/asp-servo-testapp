@@ -1,11 +1,17 @@
 #include "../include/asp_servo_testapp/velocitytest.hpp"
 
+
 int main(int argc, char** argv) {
 
+	// Register signal handlers to be executed when catching SIGINT/SIGABORT/...
+	// Attempt to implement a safe exit
+	register_handlers();
+	
     bool verbose = true;
     if (argc > 1) {
 		verbose = false;
     }
+    
 	// Variables
 	int 	actual_velocity 	= 0;
     float 	target_velocity 	= 0; // in [mm/s] or [°/s]
@@ -13,8 +19,6 @@ int main(int argc, char** argv) {
     char 	input_str[INPUT_LEN];
     std::string servo_name;	
 	
-    // Loading servo settings from XML	
-    asp::ServoCollection servo_collection(CONFIG + VEL_CONF);
 
     // Prints out a summary of the servos
     std::cout << servo_collection << std::endl;
@@ -45,9 +49,11 @@ int main(int argc, char** argv) {
 		} catch(const std::runtime_error& error){
 			std::cerr<< error.what();
 			// Should we stop the servo? Which one? Everyone?
+			stop_all();
 			continue;
 		}
 
+		// chop the command. Is this MAX_V the right one for every servo?
         if (servo_cmd > MAX_V) {
             servo_cmd = MAX_V;
         }
@@ -67,6 +73,9 @@ int main(int argc, char** argv) {
 		std::cout << "Position of " << servo_name << ": " 
 			<< servo_collection.read_INT32(servo_name, "Position") 
 			<< std::endl;
+			
+		// Raise signals just to see if it exits cleanly
+		//std::raise(SIGABRT);
     }
 	
     servo_collection.set_verbose(verbose);
