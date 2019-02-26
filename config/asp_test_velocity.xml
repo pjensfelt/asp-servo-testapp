@@ -39,24 +39,30 @@
               <!-- Controlword object is added to the TxPDO by default -->
               <Object>
                 <Name>Velocity</Name>
-                <Index>0x60FF</Index>
+                <Index>0x60FF</Index> <!--Target velocity-->
                 <Subindex>0</Subindex>
                 <Type>INT32</Type>
               </Object>
             </Tx>
             <Rx>
+              <!-- Statusword object is added to the RxPDO by default -->
               <Object>
-                <!-- Statusword object is added to the RxPDO by default -->
                 <Name>Position</Name>
-                <Index>0x6064</Index>
+                <Index>0x6064</Index> <!--Position actual value-->
                 <Subindex>0</Subindex>
                 <Type>INT32</Type>
               </Object>
               <Object>
-                <Name>Velocity</Name>
+                <Name>Velocity</Name> <!--Velocity actual value-->
                 <Index>0x606C</Index>
                 <Subindex>0</Subindex>
                 <Type>INT32</Type>
+              </Object>
+              <Object>
+                <Name>Torque</Name> 
+                <Index>0x6077</Index> <!--Torque actual value-->
+                <Subindex>0</Subindex>
+                <Type>INT16</Type>
               </Object>
             </Rx>
           </PDOmapping>
@@ -103,18 +109,24 @@
               </Object>
             </Tx>
             <Rx>
+              <!-- Statusword object is added to the RxPDO by default -->
               <Object>
-                <!-- Statusword object is added to the RxPDO by default -->
                 <Name>Position</Name>
-                <Index>0x6064</Index>
+                <Index>0x6064</Index> <!--Position actual value-->
                 <Subindex>0</Subindex>
                 <Type>INT32</Type>
               </Object>
               <Object>
-                <Name>Velocity</Name>
+                <Name>Velocity</Name> <!--Velocity actual value-->
                 <Index>0x606C</Index>
                 <Subindex>0</Subindex>
                 <Type>INT32</Type>
+              </Object>
+              <Object>
+                <Name>Torque</Name> 
+                <Index>0x6077</Index> <!--Torque actual value-->
+                <Subindex>0</Subindex>
+                <Type>INT16</Type>
               </Object>
             </Rx>
           </PDOmapping>
@@ -161,18 +173,24 @@
               </Object>
             </Tx>
             <Rx>
+              <!-- Statusword object is added to the RxPDO by default -->
               <Object>
-                <!-- Statusword object is added to the RxPDO by default -->
                 <Name>Position</Name>
-                <Index>0x6064</Index>
+                <Index>0x6064</Index> <!--Position actual value-->
                 <Subindex>0</Subindex>
                 <Type>INT32</Type>
               </Object>
               <Object>
-                <Name>Velocity</Name>
+                <Name>Velocity</Name> <!--Velocity actual value-->
                 <Index>0x606C</Index>
                 <Subindex>0</Subindex>
                 <Type>INT32</Type>
+              </Object>
+              <Object>
+                <Name>Torque</Name> 
+                <Index>0x6077</Index> <!--Torque actual value-->
+                <Subindex>0</Subindex>
+                <Type>INT16</Type>
               </Object>
             </Rx>
           </PDOmapping>
@@ -219,18 +237,24 @@
               </Object>
             </Tx>
             <Rx>
+              <!-- Statusword object is added to the RxPDO by default -->
               <Object>
-                <!-- Statusword object is added to the RxPDO by default -->
                 <Name>Position</Name>
-                <Index>0x6064</Index>
+                <Index>0x6064</Index> <!--Position actual value-->
                 <Subindex>0</Subindex>
                 <Type>INT32</Type>
               </Object>
               <Object>
-                <Name>Velocity</Name>
+                <Name>Velocity</Name> <!--Velocity actual value-->
                 <Index>0x606C</Index>
                 <Subindex>0</Subindex>
                 <Type>INT32</Type>
+              </Object>
+              <Object>
+                <Name>Torque</Name> 
+                <Index>0x6077</Index> <!--Torque actual value-->
+                <Subindex>0</Subindex>
+                <Type>INT16</Type>
               </Object>
             </Rx>
           </PDOmapping>
@@ -277,18 +301,24 @@
               </Object>
             </Tx>
             <Rx>
+              <!-- Statusword object is added to the RxPDO by default -->
               <Object>
-                <!-- Statusword object is added to the RxPDO by default -->
                 <Name>Position</Name>
-                <Index>0x6064</Index>
+                <Index>0x6064</Index> <!--Position actual value-->
                 <Subindex>0</Subindex>
                 <Type>INT32</Type>
               </Object>
               <Object>
-                <Name>Velocity</Name>
+                <Name>Velocity</Name> <!--Velocity actual value-->
                 <Index>0x606C</Index>
                 <Subindex>0</Subindex>
                 <Type>INT32</Type>
+              </Object>
+              <Object>
+                <Name>Torque</Name> 
+                <Index>0x6077</Index> <!--Torque actual value-->
+                <Subindex>0</Subindex>
+                <Type>INT16</Type>
               </Object>
             </Rx>
           </PDOmapping>
