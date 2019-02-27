@@ -22,6 +22,20 @@ int main(int argc, char** argv) {
     servo_collection.require_ecat_state(asp::EthercatStates::Operational);
     servo_collection.require_servo_state(asp::ServoStates::OperationEnabled);
 
+    int minLimit = servo_collection.SDOread_INT32("s1", 1, 0x607D, 1);
+    int maxLimit = servo_collection.SDOread_INT32("s1", 1, 0x607D, 2);
+    std::cout << "s1 limits min: " << minLimit << " max: " << maxLimit << std::endl;
+    minLimit = servo_collection.SDOread_INT32("s2", 2, 0x607D, 1);
+    maxLimit = servo_collection.SDOread_INT32("s2", 2, 0x607D, 2);
+    std::cout << "s2 limits min: " << minLimit << " max: " << maxLimit << std::endl;
+    minLimit = servo_collection.SDOread_INT32("s3", 3, 0x607D, 1);
+    maxLimit = servo_collection.SDOread_INT32("s3", 3, 0x607D, 2);
+    std::cout << "s3 limits min: " << minLimit << " max: " << maxLimit << std::endl;
+    minLimit = servo_collection.SDOread_INT32("s4", 4, 0x607D, 1);
+    maxLimit = servo_collection.SDOread_INT32("s4", 4, 0x607D, 2);
+    std::cout << "s4 limits min: " << minLimit << " max: " << maxLimit << std::endl;
+
+
     // test loop
     int actual_velocity = 0;
     while (true) {
