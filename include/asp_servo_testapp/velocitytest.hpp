@@ -115,11 +115,13 @@ void stop_all(){
 	std::map<std::string, double>::iterator it;
 	
 	// Write 0 to all the servos
-	for( it = scale.begin(); it!= scale.end(); it ++){
+	for( it = scale.begin(); it!= scale.end(); it ++)
+	{
 		std::cout << "Stopping " << it->first << std::endl;
 		servo_collection.write(it->first,"Velocity", 0);
 	}
-	
+	// Or require that everyone goes into QUICK_STOP state
+	//servo_collection.require_servo_state(asp::ServoStates::QuickStopActive);
 }
 
 void stop_all(int sig){
