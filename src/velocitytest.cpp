@@ -2,7 +2,7 @@
 
 #define CTRL_LOOP 1000 
 #define WRITE_MAX 100
-#define WATCHDOG_LOOP 3000 // The watchdog has a loop that is twice as long as the main thread
+#define WATCHDOG_LOOP 2000 // The watchdog has a loop that is twice as long as the main thread
 
 int write_cnt = 0;
 sem_t semaphore;
@@ -34,16 +34,14 @@ void *watchdog_fct(void *args){
 }
 
 void stop_all(asp::ServoCollection *servo_collection){
-	std::map<std::string, double>::iterator it;
-	
-	// Write 0 to all the servos
-	for( it = scale.begin(); it!= scale.end(); it ++)
-	{
-		std::cout << "Stopping " << it->first << std::endl;
-		servo_collection->write(it->first,"Velocity", 0);
-	}
+
 	// Or require that everyone goes into QUICK_STOP state
-	//servo_collection->require_servo_state(asp::ServoStates::QuickStopActive);
+	servo_collection->require_servo_state(asp::ServoStates::QuickStopActive);
+	
+	// Shut everything down, disconnect
+	servo_collection->require_servo_state(asp::ServoStates::SwitchOnDisabled);
+    servo_collection->set_verbose(false);  
+    servo_collection->disconnect();
 }
 
 void *ctrl_fct(void *args){
@@ -70,6 +68,7 @@ void *ctrl_fct(void *args){
         std::string input_str;
         std::cin >> input_str;
         if (input_str == "q") {
+			stop_all(servo_collection);
             break;
         }
         std::string delimiter = ",";
@@ -103,10 +102,6 @@ void *ctrl_fct(void *args){
 		<< std::endl;
     }
 
-    servo_collection->set_verbose(verbose);
-    servo_collection->require_servo_state(asp::ServoStates::SwitchOnDisabled);
-    servo_collection->set_verbose(false);  
-    servo_collection->disconnect();
     std::cout << "Ctrl exiting" << std::endl;
     pthread_exit(0);
 }
@@ -160,5 +155,6 @@ int main(int argc, char** argv) {
     * *should* happen only if it detected that the control loop died/got stuck.
     * We can then kill the main thread (hence the control thread).
     */
+	cleanup();
     exit(0);
 }
