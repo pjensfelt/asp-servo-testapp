@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.9)
 project(apitestapp VERSION 0.0.1 DESCRIPTION "api test apps")
 
+set(CMAKE_BUILD_TYPE Debug)
+
 add_executable(positiontest ${CMAKE_CURRENT_SOURCE_DIR}/src/positiontest.cpp )
 target_link_libraries( positiontest asp_servo_api soem pthread rt tinyxml2 )
 
