@@ -4,11 +4,18 @@
 #define WRITE_MAX 100
 #define WATCHDOG_LOOP 2000 // The watchdog has a loop that is twice as long as the main thread
 
+
+// Loading servo settings from XML	- temporarly global
+asp::ServoCollection servo_collection(CONFIG + VEL_CONF);
+
 int write_cnt = 0;
 sem_t semaphore;
+pthread_mutex_t stopall_mx; 
+bool stopped = false;
 
 void *watchdog_fct(void *args){
 
+	register_handlers();
 	std::cout << "Watchdog function up" << std::endl;
 	
 	// Variables
@@ -27,25 +34,43 @@ void *watchdog_fct(void *args){
 	
 	// If we're here, the ctrl_fucntion hasn't updated the write count in a while -> emergency
 	std::cout << "Watchdog TIMEOUT after " << WATCHDOG_LOOP << " ms,  stopping all" << std::endl;
-	stop_all(servo_collection);
+	stop_all();
 	
 	std::cout << "Watchdog exiting "<< std::endl;
 	pthread_exit(0);	
 }
 
-void stop_all(asp::ServoCollection *servo_collection){
+void stop_all(int sig){
+	std::cerr << "CAUGHT SIGNAL "<< strdup(strsignal(sig)) << std::endl;
+	stop_all();
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	pthread_exit((void *) NULL);
 
-	// Or require that everyone goes into QUICK_STOP state
-	servo_collection->require_servo_state(asp::ServoStates::QuickStopActive);
+}
+
+void stop_all(){
 	
-	// Shut everything down, disconnect
-	servo_collection->require_servo_state(asp::ServoStates::SwitchOnDisabled);
-    servo_collection->set_verbose(false);  
-    servo_collection->disconnect();
+	pthread_mutex_lock(&stopall_mx);
+	if(!stopped){
+
+		std::cerr << "Stopping everything" << std::endl;
+		// Or require that everyone goes into QUICK_STOP state
+		servo_collection.require_servo_state(asp::ServoStates::QuickStopActive);
+
+		// Shut everything down, disconnect
+		servo_collection.require_servo_state(asp::ServoStates::SwitchOnDisabled);
+		servo_collection.set_verbose(false);  
+		servo_collection.disconnect();
+		std::cerr << "Stopped everything" << std::endl;
+		stopped = true;
+	}
+	pthread_mutex_unlock(&stopall_mx);
+	return;
 }
 
 void *ctrl_fct(void *args){
 	
+	register_handlers();
 	std::cout << "Ctrl function up" << std::endl;
 	
     // Prints out a summary of the servos
@@ -58,7 +83,7 @@ void *ctrl_fct(void *args){
     servo_collection->require_ecat_state(asp::EthercatStates::Operational);
     servo_collection->require_servo_state(asp::ServoStates::OperationEnabled);
 
-	// Signal the watchdog that I'm ready to send commands
+	// Signal the watchdog that I'm ready to send commands // HERE OR LOWER?
 	sem_post(&semaphore);
 	
     // test loop
@@ -68,7 +93,7 @@ void *ctrl_fct(void *args){
         std::string input_str;
         std::cin >> input_str;
         if (input_str == "q") {
-			stop_all(servo_collection);
+			stop_all();
             break;
         }
         std::string delimiter = ",";
@@ -93,6 +118,8 @@ void *ctrl_fct(void *args){
         // Say to the watchdog that we've sent the command
         write_cnt =(write_cnt +1) % WRITE_MAX;
         
+        raise(SIGABRT);
+        
         // Sleep
         std::this_thread::sleep_for(std::chrono::milliseconds(CTRL_LOOP));
         servo_collection->set_verbose(false);
@@ -112,6 +139,7 @@ void cleanup(){
 
 int main(int argc, char** argv) {
 	
+	register_handlers();
 	pthread_t wdog_tid, ctrl_tid, main_tid;
 	
     bool verbose = true;
@@ -121,11 +149,11 @@ int main(int argc, char** argv) {
     
 	main_tid = pthread_self();
 	
-	// Loading servo settings from XML	- temporarly global
-	asp::ServoCollection servo_collection(CONFIG + VEL_CONF);
-	
 	// Create semaphore
 	sem_init(&semaphore, 0, 0);
+	
+	// Initialize mutex
+	pthread_mutex_init(&stopall_mx, NULL);
 	
     // Create watchdog thread
     if(pthread_create(&wdog_tid, NULL, watchdog_fct, (void *) &servo_collection) != 0){
@@ -133,6 +161,8 @@ int main(int argc, char** argv) {
     	cleanup();
     	exit(1);
     }
+    // Set thread name
+    pthread_setname_np(wdog_tid, "Watchdog");
     
     // We have the watchdog -> create the control thread
     if(pthread_create(&ctrl_tid, NULL, ctrl_fct, (void *) &servo_collection) != 0){
@@ -141,15 +171,17 @@ int main(int argc, char** argv) {
     	exit(1);
     }
     
+    // Set thread name
+    pthread_setname_np(ctrl_tid, "Control");
+    
     // Wait until the two threads have died
     if(pthread_join(wdog_tid, NULL) != 0){
     	std::cerr << "Error while joining watchdog thread, should never happen " << std::endl;
     	/* Error while waiting for watchdog thread, 
     	 *should never happen, perform safe exit just in case ?
     	 */
-    	stop_all(&servo_collection);
+    	stop_all();
     }
-    
 	/**
     * The watchdog has died (having performed the safe stop procedure), this 
     * *should* happen only if it detected that the control loop died/got stuck.

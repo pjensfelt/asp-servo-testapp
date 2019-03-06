@@ -109,21 +109,20 @@ int to_ticks(float velocity, std::string servo)
 	return (int) it->second*velocity;
 }
 
-void stop_all(asp::ServoCollection *servo_collection);
+void stop_all();
 
-//void stop_all(int sig);
+void stop_all(int sig);
 
 /**
 * Attemp to provide a clean exit by executing stop_all when a signal is catched.
 */
-/*
 void register_handlers(){
 
-	std::signal(SIGINT, stop_all);
-	std::signal(SIGABRT, stop_all);
-	std::signal(SIGFPE, stop_all);
-	std::signal(SIGILL, stop_all);
-	std::signal(SIGSEGV, stop_all);
-	std::signal(SIGTERM, stop_all);
-
-}*/
+	struct sigaction sa;
+    sa.sa_handler = stop_all;
+    sigemptyset(&(sa.sa_mask));
+    for (int i = 1; i <= 64; i++) {
+    	sigaddset(&(sa.sa_mask), i);
+    	sigaction(i, &sa, NULL);
+    }
+}
