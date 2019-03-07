@@ -1,3 +1,5 @@
+#ifndef VELOCITYTEST_H
+#define VELOCITYTEST_H
 #include <asp_servo_api/asp_servo.h>
 #include <asp_servo_api/servo.h>
 #include <iostream>
@@ -7,6 +9,7 @@
 #include <csignal>
 #include <string.h>
 #include <semaphore.h>
+#include "safety.hpp"
 
 #define MAX_V 		1310720
 
@@ -19,7 +22,7 @@ const std::string CONFIG 	= "../config/" ;
 const std::string VEL_CONF 	= "asp_test_velocity.xml" ;
 const int INPUT_LEN 		= 255 ;
 
-// Loading servo settings from XML	- temporarly global
+// Loading servo settings from XML
 asp::ServoCollection servo_collection(CONFIG + VEL_CONF);
 
 int write_cnt 	= 0;
@@ -59,11 +62,11 @@ std::map<std::string, std::string> servoname =
 std::map<std::string, double> scale = 
 	{
 
-		{"s1",  5044.0}, // Z -> ticks/mm 
-		{"s2",  3991.8}, // X -> ticks/mm
-		{"s3",  5099.4}, // Y -> ticks/mm
-		{"s4", 32768.0}, // B -> ticks/°
-		{"s5", 27307.0}, // A -> ticks/°
+		{"s1",  5044000.00}, // Z -> ticks/m
+		{"s2",  3991800.00}, // X -> ticks/m
+		{"s3",  5099400.00}, // Y -> ticks/m
+		{"s4", 	1877468.10}, // B -> ticks/rad
+		{"s5", 	1564575.85}, // A -> ticks/rad
 	};
 
 /**
@@ -122,118 +125,4 @@ int to_ticks(float velocity, std::string servo)
 	return (int) it->second*velocity;
 }
 
-// --------------------------- Safety functions -----------------------------------//
-/**
-* Stops all the servo motors by requiring them to go in the QuickStopActive state.
-* Turns them off and closes the connection.
-*/
-void stop_all(){
-	
-	pthread_mutex_lock(&stopall_mx);
-	if(!stopped){
-
-		std::cerr << "Stopping everything" << std::endl;
-		// Or require that everyone goes into QUICK_STOP state
-		servo_collection.require_servo_state(asp::ServoStates::QuickStopActive);
-
-		// Shut everything down, disconnect
-		servo_collection.require_servo_state(asp::ServoStates::SwitchOnDisabled);
-		servo_collection.set_verbose(false);  
-		servo_collection.disconnect();
-		std::cerr << "Stopped everything" << std::endl;
-		stopped = true;
-	}
-	pthread_mutex_unlock(&stopall_mx);
-	return;
-}
-
-/**
-* Handles the received signals by stopping the servo motors.
-*/
-void handle_sig(int sig){
-	std::cerr << "CAUGHT SIGNAL "<< strdup(strsignal(sig)) << std::endl;
-	stop_all();
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	pthread_exit((void *) NULL);
-
-}
-
-
-/**
-* Attemp to provide a clean exit by executing stop_all when a signal is catched.
-*/
-void register_handlers(){
-
-	struct sigaction sa;
-    sa.sa_handler = handle_sig;
-    sigemptyset(&(sa.sa_mask));
-    for (int i = 1; i <= 64; i++) {
-    	sigaddset(&(sa.sa_mask), i);
-    	sigaction(i, &sa, NULL);
-    }
-}
-
-/**
-* Computes the difference between 2 timespec structures.
-* ref: https://gist.github.com/diabloneo/9619917
-*/
-void timespec_diff(struct timespec *start, struct timespec *stop,
-                   struct timespec *result)
-{
-    if ((stop->tv_nsec - start->tv_nsec) < 0) {
-        result->tv_sec = stop->tv_sec - start->tv_sec - 1;
-        result->tv_nsec = stop->tv_nsec - start->tv_nsec + 1000000000;
-    } else {
-        result->tv_sec = stop->tv_sec - start->tv_sec;
-        result->tv_nsec = stop->tv_nsec - start->tv_nsec;
-    }
-
-    return;
-}
-
-/**
-* Implements the watchdog loop: periodically checks if a variable has been updated,
-* which means that 
-*/
-void *watchdog_fct(void *args){
-
-	register_handlers();
-	std::cout << "Watchdog function up" << std::endl;
-	
-	// Variables
-	asp::ServoCollection *servo_collection = (asp::ServoCollection *)args;
-	int prev_count = -2;
-	int read_val = -1;
-	
-	// Wait the control thread to be operative
-	sem_wait(&semaphore);
-	struct timespec old_time, new_time, diff;
-    long            ms; // Milliseconds
-    time_t          s;  // Seconds
-    
-    // Initiali time
-    clock_gettime(CLOCK_REALTIME, &new_time);
-		
-	do{		
-		old_time = new_time;
-		clock_gettime(CLOCK_REALTIME, &new_time);
-		timespec_diff(&old_time, &new_time, &diff);
-		
-		std::cerr<<"Elapsed time: " << diff.tv_sec << " s " << diff.tv_nsec <<" ns " << std::endl;
-			   
-		prev_count = read_val;
-		read_val = write_cnt;
-     
-		std::this_thread::sleep_for(std::chrono::milliseconds(WATCHDOG_LOOP));
-	}while(read_val != prev_count);
-	
-	// If we're here, the ctrl_fucntion hasn't updated the write count in a while -> emergency
-	std::cout << "Watchdog TIMEOUT after " << WATCHDOG_LOOP << " ms,  stopping all" << std::endl;
-	stop_all();
-	
-	std::cout << "Watchdog exiting "<< std::endl;
-	pthread_exit(0);	
-}
-
-
-
+#endif
