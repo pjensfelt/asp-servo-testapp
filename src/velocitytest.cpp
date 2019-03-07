@@ -1,73 +1,5 @@
 #include "../include/asp_servo_testapp/velocitytest.hpp"
 
-#define CTRL_LOOP 1000 
-#define WRITE_MAX 100
-#define WATCHDOG_LOOP 2000 // The watchdog has a loop that is twice as long as the main thread
-
-
-// Loading servo settings from XML	- temporarly global
-asp::ServoCollection servo_collection(CONFIG + VEL_CONF);
-
-int write_cnt = 0;
-sem_t semaphore;
-pthread_mutex_t stopall_mx; 
-bool stopped = false;
-
-void *watchdog_fct(void *args){
-
-	register_handlers();
-	std::cout << "Watchdog function up" << std::endl;
-	
-	// Variables
-	asp::ServoCollection *servo_collection = (asp::ServoCollection *)args;
-	int prev_count = -2;
-	int read_val = -1;
-	
-	// Wait the control thread to be operative
-	sem_wait(&semaphore);
-	
-	do{		
-		prev_count = read_val;
-		read_val = write_cnt;
-		std::this_thread::sleep_for(std::chrono::milliseconds(WATCHDOG_LOOP));
-	}while(read_val != prev_count);
-	
-	// If we're here, the ctrl_fucntion hasn't updated the write count in a while -> emergency
-	std::cout << "Watchdog TIMEOUT after " << WATCHDOG_LOOP << " ms,  stopping all" << std::endl;
-	stop_all();
-	
-	std::cout << "Watchdog exiting "<< std::endl;
-	pthread_exit(0);	
-}
-
-void stop_all(int sig){
-	std::cerr << "CAUGHT SIGNAL "<< strdup(strsignal(sig)) << std::endl;
-	stop_all();
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	pthread_exit((void *) NULL);
-
-}
-
-void stop_all(){
-	
-	pthread_mutex_lock(&stopall_mx);
-	if(!stopped){
-
-		std::cerr << "Stopping everything" << std::endl;
-		// Or require that everyone goes into QUICK_STOP state
-		servo_collection.require_servo_state(asp::ServoStates::QuickStopActive);
-
-		// Shut everything down, disconnect
-		servo_collection.require_servo_state(asp::ServoStates::SwitchOnDisabled);
-		servo_collection.set_verbose(false);  
-		servo_collection.disconnect();
-		std::cerr << "Stopped everything" << std::endl;
-		stopped = true;
-	}
-	pthread_mutex_unlock(&stopall_mx);
-	return;
-}
-
 void *ctrl_fct(void *args){
 	
 	register_handlers();
@@ -82,19 +14,28 @@ void *ctrl_fct(void *args){
     servo_collection->connect();
     servo_collection->require_ecat_state(asp::EthercatStates::Operational);
     servo_collection->require_servo_state(asp::ServoStates::OperationEnabled);
-
+    
+	// Update the servo state to not-stopped
+	pthread_mutex_lock(&stopall_mx);
+	stopped = false;
+	pthread_mutex_unlock(&stopall_mx);
+	
 	// Signal the watchdog that I'm ready to send commands // HERE OR LOWER?
 	sem_post(&semaphore);
 	
     // test loop
     int actual_velocity = 0;
     while (true) {
-        std::cout << "Input (servo,targetvalue or q=quit): ";
+    	
+    	std::cerr << "Input (servo,targetvalue or q=quit): ";
         std::string input_str;
         std::cin >> input_str;
         if (input_str == "q") {
 			stop_all();
             break;
+        }else if(input_str == "s"){
+        	// Raise signal
+        	raise(SIGABRT);
         }
         std::string delimiter = ",";
         std::string servo_name = input_str.substr(0, input_str.find(delimiter));
@@ -118,15 +59,17 @@ void *ctrl_fct(void *args){
         // Say to the watchdog that we've sent the command
         write_cnt =(write_cnt +1) % WRITE_MAX;
         
-        raise(SIGABRT);
+        //raise(SIGABRT);
         
         // Sleep
         std::this_thread::sleep_for(std::chrono::milliseconds(CTRL_LOOP));
+        
         servo_collection->set_verbose(false);
 
 	std::cout << "Position of " << servo_name << ": " 
 		<< servo_collection->read_INT32(servo_name, "Position") 
 		<< std::endl;
+		
     }
 
     std::cout << "Ctrl exiting" << std::endl;
@@ -139,7 +82,7 @@ void cleanup(){
 
 int main(int argc, char** argv) {
 	
-	register_handlers();
+	//register_handlers();
 	pthread_t wdog_tid, ctrl_tid, main_tid;
 	
     bool verbose = true;
@@ -149,10 +92,8 @@ int main(int argc, char** argv) {
     
 	main_tid = pthread_self();
 	
-	// Create semaphore
+	// Initialize synchronization elements
 	sem_init(&semaphore, 0, 0);
-	
-	// Initialize mutex
 	pthread_mutex_init(&stopall_mx, NULL);
 	
     // Create watchdog thread
