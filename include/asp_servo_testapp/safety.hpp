@@ -1,59 +1,48 @@
-#ifndef SAFETY_H
-#define SAFETY_H
-#include "velocitytest.hpp"
-
+#pragma once
+#include "csv.hpp"
+#include "timespec.hpp"
 
 // Defined in velocitytest.hpp
-extern asp::ServoCollection servo_collection;
-extern const int WATCHDOG_LOOP; // [ms] 
-extern int write_cnt;
+extern asp::ServoCollection servoCollection;
+extern int writeCnt;
 extern sem_t semaphore;	 			// Used to wake up the watchdog thread
-extern pthread_mutex_t stopall_mx; 	// Used to avoid more than one thread trying to stop the servos at the same time
+extern pthread_mutex_t stopallMx; 	// Used to avoid more than one thread trying to stop the servos at the same time
 extern bool stopped;				// At the beginning, the servos are stopped
+extern const int CTRL_LOOP_MS;
+extern const int MS_TO_NS;
+const int WATCHDOG_LOOP_MS = 2*CTRL_LOOP_MS; // [ms] 
 
 /**
 * Stops all the servo motors by requiring them to go in the QuickStopActive state.
 * Turns them off and closes the connection.
 */
-void stop_all(){
+void stopAll(){
 	
-	pthread_mutex_lock(&stopall_mx);
+	pthread_mutex_lock(&stopallMx);
 	if(!stopped){
 
 		std::cerr << "Stopping everything" << std::endl;
 		// Require that everyone goes into QUICK_STOP state
-		servo_collection.require_servo_state(asp::ServoStates::QuickStopActive);
+		servoCollection.require_servo_state(asp::ServoStates::QuickStopActive);
 
 		// Shut everything down, disconnect
-		servo_collection.require_servo_state(asp::ServoStates::SwitchOnDisabled);
-		servo_collection.set_verbose(false);  
-		servo_collection.disconnect();
+		servoCollection.require_servo_state(asp::ServoStates::SwitchOnDisabled);
+		servoCollection.set_verbose(false);  
+		servoCollection.disconnect();
 		std::cerr << "Stopped everything" << std::endl;
 		stopped = true;
 	}
-	pthread_mutex_unlock(&stopall_mx);
+	pthread_mutex_unlock(&stopallMx);
 	return;
 }
 
 /**
-* Handles the received signals by stopping the servo motors.
-*/
-void handle_sig(int sig){
-	std::cerr << "CAUGHT SIGNAL "<< strdup(strsignal(sig)) << std::endl;
-	stop_all();
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	pthread_exit((void *) NULL);
-
-}
-
-
-/**
 * Attemp to provide a clean exit by executing stop_all when a signal is catched.
 */
-void register_handlers(){
+void unregisterHandlers(){
 
 	struct sigaction sa;
-    sa.sa_handler = handle_sig;
+    sa.sa_handler = SIG_DFL;
     sigemptyset(&(sa.sa_mask));
     for (int i = 1; i <= 64; i++) {
     	sigaddset(&(sa.sa_mask), i);
@@ -61,11 +50,40 @@ void register_handlers(){
     }
 }
 
+
+
+/**
+* Handles the received signals by stopping the servo motors.
+*/
+void handleSig(int sig){
+	std::cerr << "Stopping. CAUGHT SIGNAL "<< strdup(strsignal(sig)) << std::endl;
+	stopAll();
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	unregisterHandlers();
+	pthread_exit((void *) NULL);
+
+}
+
+/**
+* Attemp to provide a clean exit by executing stop_all when a signal is catched.
+*/
+void registerHandlers(){
+
+	struct sigaction sa;
+    sa.sa_handler = handleSig;
+    sigemptyset(&(sa.sa_mask));
+    for (int i = 1; i <= 64; i++) {
+    	sigaddset(&(sa.sa_mask), i);
+    	sigaction(i, &sa, NULL);
+    }
+}
+
+
 /**
 * Computes the difference between 2 timespec structures.
 * ref: https://gist.github.com/diabloneo/9619917
 */
-void timespec_diff(struct timespec *start, struct timespec *stop,
+void timespecDiff(struct timespec *start, struct timespec *stop,
                    struct timespec *result)
 {
     if ((stop->tv_nsec - start->tv_nsec) < 0) {
@@ -83,44 +101,50 @@ void timespec_diff(struct timespec *start, struct timespec *stop,
 * Implements the watchdog loop: periodically checks if a variable has been updated,
 * which means that 
 */
-void *watchdog_fct(void *args){
+void *watchdogFct(void *args){
 
-	register_handlers();
+	//registerHandlers();
 	std::cout << "Watchdog function up" << std::endl;
 	
 	// Variables
 	asp::ServoCollection *servo_collection = (asp::ServoCollection *)args;
-	int prev_count = -2;
-	int read_val = -1;
+	int prevCount = -2;
+	int readVal = -1;
+	
+	struct timespec oldTime, newTime, diff;
+	struct timespec tspec, remaining;
+    int64_t cycletime_ns = WATCHDOG_LOOP_MS * MS_TO_NS;	// From ms to ns
+    long            ms; // Milliseconds
+    time_t          s;  // Seconds
 	
 	// Wait the control thread to be operative
 	sem_wait(&semaphore);
-	struct timespec old_time, new_time, diff;
-    long            ms; // Milliseconds
-    time_t          s;  // Seconds
+	std::cout << "Now watchdog awake " << std::endl;
     
     // Initiali time
-    clock_gettime(CLOCK_REALTIME, &new_time);
-		
+    //clock_gettime(CLOCK_REALTIME, &newTime);
+    clock_gettime(CLOCK_MONOTONIC, &tspec);	
 	do{		
-		old_time = new_time;
-		clock_gettime(CLOCK_REALTIME, &new_time);
-		timespec_diff(&old_time, &new_time, &diff);
+		// Adding the cycletime to the timespec
+        timespec_add(&tspec, cycletime_ns);
+        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &tspec, &remaining);
+        /*
+		oldTime = newTime;
+		clock_gettime(CLOCK_REALTIME, &newTime);
+		timespecDiff(&oldTime, &newTime, &diff);
 		
 		std::cerr<<"Elapsed time: " << diff.tv_sec << " s " << diff.tv_nsec <<" ns " << std::endl;
-			   
-		prev_count = read_val;
-		read_val = write_cnt;
+		*/	   
+		prevCount = readVal;
+		readVal = writeCnt;
+		std::cout << "HHH" << readVal << std::endl;
      
-		std::this_thread::sleep_for(std::chrono::milliseconds(WATCHDOG_LOOP));
-	}while(read_val != prev_count);
+	}while(readVal != prevCount);
 	
 	// If we're here, the ctrl_fucntion hasn't updated the write count in a while -> emergency
-	std::cout << "Watchdog TIMEOUT after " << WATCHDOG_LOOP << " ms,  stopping all" << std::endl;
-	stop_all();
+	std::cout << "Stopping. Watchdog TIMEOUT after " << WATCHDOG_LOOP_MS << " ms,  stopping all" << std::endl;
+	stopAll();
 	
 	std::cout << "Watchdog exiting "<< std::endl;
 	pthread_exit(0);	
 }
-#endif
-
