@@ -58,7 +58,7 @@ namespace cmd {
 		/**
 		* Converts the encoder value to a S.I. measure (in meters/rad).
 		*/
-		double fromTicks(int ticks) const;
+		double SIfromTicks(int ticks) const;
 
 		/**
 		* Checks if the current position is inside the defined limits. 

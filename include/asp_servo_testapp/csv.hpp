@@ -14,11 +14,11 @@
 #include "ServoInfo.hpp"
 #include "timespec.hpp"
 
-const double M_PI       	= 3.14159265358979323846;  /* pi */
-const int CTRL_LOOP_MS  	= 10; // [ms]
-const int WRITE_MAX  		= 100;  // [ms]
-const int N_SERVO 			= 5;	// Number of servo motors
-const int MS_TO_NS			= 1000000; // To convert ms to ns
+const int CTRL_LOOP_MS  	= 10; 						// [ms]
+const int WRITE_MAX  		= 100;  					// [ms]
+const int N_SERVO 			= 5;						// Number of servo motors
+const int MS_TO_NS			= 1000000; 					// To convert ms to ns
+
 // Constants
 const std::string CONFIG 		= "../config/" ;
 const std::string CSV_CONF 		= "asp_test_position.xml" ;

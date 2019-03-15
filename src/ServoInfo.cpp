@@ -16,12 +16,12 @@ namespace cmd{
 
 	int ServoInfo::toTicks(double cmdSI) const
 	{
-		return /*CLIP*/(int)(cmdSI*conversion);
+		return CLIP((int)(cmdSI*conversion));
 	}
 
-	double ServoInfo::fromTicks(int ticks) const
+	double ServoInfo::SIfromTicks(int ticks) const
 	{
-		return (double)ticks/conversion;
+		return ((double)ticks)/conversion;
 	}
 	
 	bool ServoInfo::inLimitsTicks(int currentPos) const

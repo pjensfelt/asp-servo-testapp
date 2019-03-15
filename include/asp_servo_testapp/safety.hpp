@@ -1,9 +1,12 @@
 #pragma once
 #include "csv.hpp"
 #include "timespec.hpp"
+#include "ServoInfo.hpp"
+#include <cmath>
 
-// Defined in velocitytest.hpp
+// Defined in csv.hpp
 extern asp::ServoCollection servoCollection;
+extern std::map<std::string, cmd::ServoInfo> servoInfo_;
 extern int writeCnt;
 extern sem_t semaphore;	 			// Used to wake up the watchdog thread
 extern pthread_mutex_t stopallMx; 	// Used to avoid more than one thread trying to stop the servos at the same time
@@ -11,6 +14,15 @@ extern bool stopped;				// At the beginning, the servos are stopped
 extern const int CTRL_LOOP_MS;
 extern const int MS_TO_NS;
 const int WATCHDOG_LOOP_MS = 2*CTRL_LOOP_MS; // [ms] 
+
+// Workspace limits
+const double X_LIM[2]	= {.0, 2.750}	; // [m]
+const double Y_LIM[2]	= {.0, 100.0}	; // [m] y has no upper bound
+const double X_OFFSET	= 0.165		; // Translation from global origin to 
+const double Y_OFFSET	= 0.1025		; // arm origin
+
+const double P1[2]		= {0.0625+0.1, 0.962}; // Half arm width + gearbox width; arm lenght
+const double P2[2]		= {-0.0625   , 0.962}; // Symmetric, no gearbox
 
 /**
 * Stops all the servo motors by requiring them to go in the QuickStopActive state.
@@ -36,66 +48,42 @@ void stopAll(){
 	return;
 }
 
-/**
-* Attemp to provide a clean exit by executing stop_all when a signal is catched.
-*/
-void unregisterHandlers(){
-
-	struct sigaction sa;
-    sa.sa_handler = SIG_DFL;
-    sigemptyset(&(sa.sa_mask));
-    for (int i = 1; i <= 64; i++) {
-    	sigaddset(&(sa.sa_mask), i);
-    	sigaction(i, &sa, NULL);
-    }
-}
-
-
-
-/**
-* Handles the received signals by stopping the servo motors.
-*/
-void handleSig(int sig){
-	std::cerr << "Stopping. CAUGHT SIGNAL "<< strdup(strsignal(sig)) << std::endl;
-	stopAll();
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	unregisterHandlers();
-	pthread_exit((void *) NULL);
-
-}
-
-/**
-* Attemp to provide a clean exit by executing stop_all when a signal is catched.
-*/
-void registerHandlers(){
-
-	struct sigaction sa;
-    sa.sa_handler = handleSig;
-    sigemptyset(&(sa.sa_mask));
-    for (int i = 1; i <= 64; i++) {
-    	sigaddset(&(sa.sa_mask), i);
-    	sigaction(i, &sa, NULL);
-    }
-}
-
-
-/**
-* Computes the difference between 2 timespec structures.
-* ref: https://gist.github.com/diabloneo/9619917
-*/
-void timespecDiff(struct timespec *start, struct timespec *stop,
-                   struct timespec *result)
+void checkInWorkspace()
 {
-    if ((stop->tv_nsec - start->tv_nsec) < 0) {
-        result->tv_sec = stop->tv_sec - start->tv_sec - 1;
-        result->tv_nsec = stop->tv_nsec - start->tv_nsec + 1000000000;
-    } else {
-        result->tv_sec = stop->tv_sec - start->tv_sec;
-        result->tv_nsec = stop->tv_nsec - start->tv_nsec;
+	int pos;
+	double x, y, theta;
+	double P1_p[2], P2_p[2];
+	x = servoInfo_["s2"].SIfromTicks(servoCollection.read_INT32("s2", "Position"));
+	y = servoInfo_["s3"].SIfromTicks(servoCollection.read_INT32("s3", "Position"));
+	theta = servoInfo_["s4"].SIfromTicks(servoCollection.read_INT32("s4", "Position"));
+	
+	P1_p[0] = P1[0]*cos(theta) - P1[1]*sin(theta) + X_OFFSET + x;
+	P1_p[1] = P1[0]*sin(theta) + P1[1]*cos(theta) + Y_OFFSET + y;
+	P2_p[0] = P2[0]*cos(theta) - P2[1]*sin(theta) + X_OFFSET + x;
+	P2_p[1] = P2[0]*cos(theta) - P2[1]*sin(theta) + Y_OFFSET + y;
+	
+	std::cout << "P1x " << P1_p[0] << "P1y " << P1_p[1] << std::endl;
+	std::cout << "P2x " << P2_p[0] << "P2y " << P2_p[2] << std::endl;
+	
+	if(    P1_p[0]< X_LIM[0] || P1_p[0]> X_LIM[1]  /*P1.x is outbounds*/
+		|| P2_p[0]< X_LIM[0] || P2_p[0]> X_LIM[1]  /*P2.x is outbounds*/
+		|| P1_p[1]< Y_LIM[0] || P1_p[1]> Y_LIM[1]  /*P1.y is outbounds*/
+		|| P2_p[1]< Y_LIM[0] || P2_p[1]> Y_LIM[1]){/*P2.y is outbounds*/
+			stopAll();
+		}
+	
+	for (auto kvp: servoInfo_) {
+        pos = servoCollection.read_INT32(kvp.first, "Position");
+        kvp.second.setPositionTicks(pos); // For logging when exiting
+        if(!kvp.second.inLimitsTicks(pos)){
+            std::cout << "Stopping. Servo " << kvp.first << " not in limits" << std::endl;
+            std::cout << "Position " << pos << " limits " << kvp.second.getLlimTicks() << " " << kvp.second.getUlimTicks();
+            stopAll();
+            break;
+        }
     }
-
-    return;
 }
+
 
 /**
 * Implements the watchdog loop: periodically checks if a variable has been updated,
@@ -128,16 +116,9 @@ void *watchdogFct(void *args){
 		// Adding the cycletime to the timespec
         timespec_add(&tspec, cycletime_ns);
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &tspec, &remaining);
-        /*
-		oldTime = newTime;
-		clock_gettime(CLOCK_REALTIME, &newTime);
-		timespecDiff(&oldTime, &newTime, &diff);
-		
-		std::cerr<<"Elapsed time: " << diff.tv_sec << " s " << diff.tv_nsec <<" ns " << std::endl;
-		*/	   
+        	   
 		prevCount = readVal;
 		readVal = writeCnt;
-		std::cout << "HHH" << readVal << std::endl;
      
 	}while(readVal != prevCount);
 	

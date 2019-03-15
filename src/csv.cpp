@@ -70,10 +70,10 @@ void *ctrlFct(void *args){
     	
 		// Signal the watchdog that I'm ready to send commands // HERE OR LOWER?
 		sem_post(&semaphore); // Only needed once, but branches cost and are ugly. ( Do they tho ?)
-		if(i == 1000){ // CHECK when delay is detected
+		/*if(i == 1000){ // CHECK when delay is detected
             std::cout << "Sleeping more" << std::endl;
             timespec_add(&tspec, cycletime_ns*3);
-        }
+        }*/
         // Adding the cycletime to the timespec
         timespec_add(&tspec, cycletime_ns);
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &tspec, &remaining);
@@ -81,6 +81,9 @@ void *ctrlFct(void *args){
         // Call "fake callback" function, will be subscribed to topic
 		cmdCallback();
         i++;
+        if(i== 10){
+        	break;
+        }
     }
  
     std::cout << "Ctrl exiting" << std::endl;
@@ -90,7 +93,6 @@ void *ctrlFct(void *args){
 void checkServoPosition()
 {
     int pos = 0;
-    // Do something
     for (auto kvp: servoInfo_) {
         pos = servoCollection.read_INT32(kvp.first, "Position");
         kvp.second.setPositionTicks(pos); // For logging when exiting
@@ -124,10 +126,10 @@ void initServoInfo(){
     servoInfo_["s5"] = cmd::ServoInfo("s5", 5, "A", 1564575.85, "rad/s", (int)(0.0 *1564575.85),  (int)(M_PI*1564575.85)); 
     */
 
-    servoInfo_["s1"] = cmd::ServoInfo("s1", 1, "Z", 5044000.00, "m/s",   (int)0,  (int)(1.3*5044000.0)); 
-    servoInfo_["s2"] = cmd::ServoInfo("s2", 2, "X", 3991800.00, "m/s",   (int)0,  (int)(1.5*3991800.0)); 
-    servoInfo_["s3"] = cmd::ServoInfo("s3", 3, "Y", 5099400.00, "m/s",   (int)0,  (int)(0.5*5099400.0)); 
-    servoInfo_["s4"] = cmd::ServoInfo("s4", 4, "B", 1877468.10, "rad/s", (int)0,  (int)(M_PI*1877468.0)); 
+    servoInfo_["s1"] = cmd::ServoInfo("s1", 1, "Z", 5044000.00, "m/s",   (int)(0.2*5044000.00),  (int)(1.3*5044000.0)); 
+    servoInfo_["s2"] = cmd::ServoInfo("s2", 2, "X", 3991800.00, "m/s",   (int)(0.3*3991800.00),  (int)(1.5*3991800.0)); 
+    servoInfo_["s3"] = cmd::ServoInfo("s3", 3, "Y", 5099400.00, "m/s",   (int)(0*5099400.00),  (int)(0.5*5099400.0)); 
+    servoInfo_["s4"] = cmd::ServoInfo("s4", 4, "B", 1877468.10, "rad/s", (int)(-(0.8)*M_PI/2*1877468.0),  (int)(+(0.8)*M_PI/2*1877468.0)); 
     servoInfo_["s5"] = cmd::ServoInfo("s5", 5, "A", 1564575.85, "rad/s", (int)0,  (int)(M_PI*1564575.85)); 
 }
 
