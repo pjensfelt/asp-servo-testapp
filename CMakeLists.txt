@@ -12,5 +12,5 @@ add_executable(torquetest ${CMAKE_CURRENT_SOURCE_DIR}/src/torquetest.cpp )
 target_link_libraries( torquetest asp_servo_api soem pthread rt tinyxml2 )
 
 
-add_executable(csv ${CMAKE_CURRENT_SOURCE_DIR}/src/csv.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/ServoInfo.cpp)
+add_executable(csv ${CMAKE_CURRENT_SOURCE_DIR}/src/csv.cpp )
 target_link_libraries( csv asp_servo_api soem pthread rt tinyxml2 )

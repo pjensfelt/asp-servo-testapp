@@ -11,7 +11,6 @@
 #include <array>
 #include <semaphore.h>
 #include "safety.hpp"
-#include "ServoInfo.hpp"
 #include "timespec.hpp"
 
 const int CTRL_LOOP_MS  	= 10; 						// [ms]
@@ -21,17 +20,13 @@ const int MS_TO_NS			= 1000000; 					// To convert ms to ns
 
 // Constants
 const std::string CONFIG 		= "../config/" ;
-const std::string CSV_CONF 		= "asp_test_position.xml" ;
+const std::string CSV_CONF 		= "asp_test_velocity.xml" ;
 
 // Loading servo settings from XML
 asp::ServoCollection servoCollection(CONFIG + CSV_CONF);
-std::map<std::string, cmd::ServoInfo> servoInfo_;
 
 int writeCnt 	= 0;
 sem_t semaphore;	 		// Used to wake up the watchdog thread
-pthread_mutex_t stopallMx; 	// Used to avoid more than one thread trying to stop the servos at the same time
-bool stopped = true;		// At the beginning, the servos are stopped
-
 
 /**
 * Represents a command that has to be given to the servo motors. 
